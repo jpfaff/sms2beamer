@@ -1,0 +1,33 @@
+# Configuration file for Gammu SMS Daemon
+
+# Gammu library configuration, see gammurc(5)
+[gammu]
+# Please configure this!
+port = /dev/ttyUSB0
+connection = at
+synchronizetime = yes
+# Debugging
+#logfile = gammu/logs/gammulog
+#logformat = textall
+
+
+# SMSD configuration, see gammu-smsdrc(5)
+[smsd]
+PIN = 4114
+service = files
+# Increase for debugging information
+#logfile = gammu/logs/smsdlog
+#debuglevel = 255
+CheckBattery = 0
+Send = false
+#ResetFrequency = 10
+MultipartTimeout = 5
+
+#Attention, Hard reset can destroy data.
+#HardResetFrequency = 10
+
+# Paths where messages are stored
+inboxpath = gammu/inbox/
+outboxpath = gammu/outbox/
+sentsmspath = gammu/sent/
+errorsmspath = gammu/error/

@@ -1,0 +1,94 @@
+#!/usr/bin/wish
+package require Tk
+wm title . "SMS2BEAMER Brigata Scout Locarno (Chip)"
+ttk::frame .c
+
+ttk::labelframe .c.impo -text "Impostazioni" -padding "3 3 25 3" 
+ttk::frame .c.impo.temp -padding "3 3 25 3"
+ttk::label .c.impo.temp.tempo -text "Tempo di attesa (s)" -padding "3 3 50 3"
+tk::spinbox .c.impo.temp.tempoentry -from 1.0 -to 100.0 -width 5 -textvariable tempoentry; set tempoentry 10 
+ttk::frame .c.impo.num -padding "3 3 25 3"
+ttk::checkbutton .c.impo.num.numerocheck -text "Numero Nascosto" -variable numero -onvalue "N" -offvalue "S"; set numero "N" 
+ttk::frame .c.impo.cont -padding "3 3 25 3"
+ttk::checkbutton .c.impo.cont.controlcheck -text "Controllo SMS automatico" -variable control -onvalue "N" -offvalue "S"; set control "N"
+ttk::button .c.impo.ok -text Salva -command salvaimpo
+
+ttk::labelframe .c.vario -text "Vario" -padding "3 3 25 3"
+ttk::label .c.vario.censu -text "Aggiungi parola alla lista censura" -padding "3 3 25 3"
+ttk::entry .c.vario.censura -textvariable censura
+ttk::frame .c.vario.censurabutton -padding "25 3 3 3"
+ttk::button .c.vario.censurabutton.vai -text "Invia" -command inviacensura
+ttk::frame .c.vario.elimina -padding "3 44 3 3"
+ttk::button .c.vario.elimina.button -text "Elimina SMS al volo" -command eliminaora
+
+ttk::labelframe .c.screens -text "Schermate Speciali" -padding "3 3 1 3"
+set schermate [list "Vietato Fumare" "Happy Hour"]
+set schermatefile [list "vietatofumare.html" "happyhour.html"]
+set ::lbox [tk::listbox .c.screens.lista -listvariable schermate -height 5]
+ttk::label .c.screens.te -text "In secondi" -padding "0 0 0 0"
+tk::spinbox .c.screens.tempi -from 1.0 -to 100.0 -width 5 -text "Secondi" -textvariable tempi; set tempi 20 
+ttk::button .c.screens.metti -text "Metti Schermata" -command metti
+ttk::button .c.screens.togli -text "Togli Schermata Anticipato" -command togli
+
+ttk::labelframe .c.fatto -text "Ultimo comando eseguito"
+ttk::label .c.fatto.comand -textvariable comand
+
+grid columnconfigure . 0 -weight 1; grid rowconfigure . 0 -weight 1
+grid .c -column 0 -row 0
+
+grid .c.impo -column 0 -row 0 -sticky n
+grid .c.impo.temp -column 0 -row 0 -sticky w
+grid .c.impo.temp.tempo -column 0 -row 0 -sticky w
+grid .c.impo.temp.tempoentry -column 1 -row 0 -sticky e
+grid .c.impo.num -column 0 -row 1 -sticky w
+grid .c.impo.num.numerocheck -column 1 -row 0 -sticky e
+grid .c.impo.cont -column 0 -row 2 -sticky w
+grid .c.impo.cont.controlcheck -column 1 -row 0 -sticky e
+grid .c.impo.ok -column 0 -row 3 -sticky w
+
+grid .c.vario -column 1 -row 0 -sticky n
+grid .c.vario.censu -column 0 -row 0 -sticky w
+grid .c.vario.censura -column 1 -row 0
+grid .c.vario.censurabutton -column 2 -row 0 -sticky e
+grid .c.vario.censurabutton.vai -column 0 -row 0 -sticky e
+grid .c.vario.elimina -column 0 -row 1 -sticky w
+grid .c.vario.elimina.button -column 0 -row 0
+
+grid .c.screens -column 0 -row 1 -sticky w
+grid .c.screens.lista -column 0 -row 0 -sticky w
+grid .c.screens.te -column 0 -row 1 -sticky w
+grid .c.screens.tempi -column 1 -row 1 -sticky w
+grid .c.screens.metti -column 0 -row 2 -sticky w
+grid .c.screens.togli -column 1 -row 2 -sticky w
+
+grid .c.fatto -column 0 -row 2 -sticky w
+grid .c.fatto.comand -column 0 -row 0 -sticky w
+
+proc inviacensura {} {  
+   exec echo $::censura >> parolevietate.txt
+   set ::comand "Aggiunto parola \"$::censura\" alle parole vietate"
+   set ::censura ""
+}
+
+proc eliminaora {} {
+   exec echo "ELIMINA=\"S\"" > var/elimina.sh
+   set ::comand "SMS Eliminato"
+}
+
+proc salvaimpo {} {
+   exec echo "TEMPO=\"$::tempoentry\"" > var/tempo.sh
+   exec echo "TEL=\"$::numero\"" > var/tel.sh
+   exec echo "CONTROL=\"$::control\"" > var/control.sh
+   set ::comand "Impostazioni Salvate"
+}
+
+proc togli {} {
+   exec echo "SCREENS=\"0\"" > var/screens.sh
+   set ::comand "Tolto Schermata Speciale"
+}
+
+proc metti {} {
+   exec echo "SCREENS=\"[lindex $::schermatefile [$::lbox curselection]]\"" > var/screens.sh
+   exec ./durata.sh $::tempi &
+   set ::comand "Visualizzata schermata speciale per $::tempi secondi"
+}
